@@ -1,5 +1,9 @@
 #!/bin/bash
-php5-fpm --fpm-config /etc/php5/fpm/php-fpm.conf --nodaemonize &
+# workaround: start the php-fpm service and stop it again, this will do the necessary configuration
+service php5.6-fpm start
+service php5.6-fpm stop
+
+php-fpm5.6 --fpm-config /etc/php/5.6/fpm/php-fpm.conf --nodaemonize &
 pid1=$! 
 nginx &
 pid2=$!
