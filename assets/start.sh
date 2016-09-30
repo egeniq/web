@@ -1,5 +1,5 @@
 #!/bin/bash
-php5-fpm --fpm-config /etc/php5/fpm/php-fpm.conf --nodaemonize &
+php5.6-fpm --fpm-config /etc/php/5.6/fpm/php-fpm.conf --nodaemonize &
 pid1=$! 
 nginx &
 pid2=$!
