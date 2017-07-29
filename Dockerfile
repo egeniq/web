@@ -1,41 +1,28 @@
-# Egeniq Web Stack with PHP 5.6 and node 6.2
-# Version 0.2
+FROM php:7.1-apache
 
-# Start with Ubuntu 14.04 LTS
-FROM ubuntu:14.04
-
-MAINTAINER Peter Verhage <peter@egeniq.com>
-
-ENV DEBIAN_FRONTEND noninteractive
-
-# Install Nginx, PHP5, node, ...
+# Install some packages and extensions
 RUN apt-get -qq update && \
-    apt-get install -qq software-properties-common && \
-    apt-get install -y language-pack-en-base && \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4F4EA0AAE5267A6C && \
-    LC_ALL=en_US.UTF-8 add-apt-repository ppa:ondrej/php && \
-    apt-get update -qq && \
-    apt-get install -qq wget nginx nginx-extras php5.6 php5.6-fpm php5.6-cli php5.6-mysql php5.6-curl php5.6-intl php5.6-mbstring php5.6-xml git nodejs npm unzip && \
-    usermod -u 1000 www-data && \
-    locale-gen nl_NL.UTF-8 && \ 
-    npm install --global n && \
-    n 6.2.1 && \
-    npm install --global gulp-cli
+    apt-get -y install curl git wget zlib1g-dev mysql-client libxml2-dev locales vim rsyslog && \
+    docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd && \
+    docker-php-ext-configure mysqli --with-mysqli=mysqlnd && \
+    docker-php-ext-install zip && \
+    docker-php-ext-install pcntl && \
+    docker-php-ext-install calendar && \
+    docker-php-ext-install pdo_mysql && \
+    docker-php-ext-install soap && \
+    docker-php-ext-install opcache && \
+    docker-php-ext-enable opcache && \
+    docker-php-ext-enable soap && \
+    a2enmod rewrite deflate
 
-# Update configuration
-RUN echo "daemon off;" >> /etc/nginx/nginx.conf && \
-    sed -i "s/;date.timezone =.*/date.timezone = UTC/" /etc/php/5.6/fpm/php.ini && \
-    sed -i "s/;date.timezone =.*/date.timezone = UTC/" /etc/php/5.6/cli/php.ini && \
-    sed -i "s/pm.max_children = 5/pm.max_children = 50/" /etc/php/5.6/fpm/pool.d/www.conf && \
-    sed -i "s/pm.start_servers = 2/pm.start_servers = 10/" /etc/php/5.6/fpm/pool.d/www.conf && \
-    sed -i "s/pm.min_spare_servers = 1/pm.min_spare_servers = 5/" /etc/php/5.6/fpm/pool.d/www.conf && \
-    sed -i "s/pm.max_spare_servers = 3/pm.max_spare_servers = 20/" /etc/php/5.6/fpm/pool.d/www.conf
+# Locales
+COPY assets/locale.gen /etc/locale.gen
+RUN locale-gen
 
-# Install assets
-COPY assets/start.sh /start.sh
-COPY assets/vhost-default /etc/nginx/sites-available/default
+# Copy assets and sources
+COPY assets/default.conf /etc/apache2/sites-available/000-default.conf
+COPY assets/security.conf /etc/apache2/conf-available/security.conf
+COPY assets/apache2.conf /etc/apache2/apache2.conf
 
-# Defaults
-WORKDIR /src
 EXPOSE 80
-CMD "/start.sh"
+CMD ["apache2-foreground"]
