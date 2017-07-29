@@ -1,2 +1,2 @@
 # egeniq/web
-Egeniq Web Stack docker image which includes Nginx, PHP 5.6.x and some useful tools.
+Egeniq Web Stack docker image which includes Apache, PHP 7.1.x and some useful tools.
